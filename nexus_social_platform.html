@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c27;--surface3:#24242f;
+  --accent:#7c6fff;--accent2:#ff6b9d;--text:#f0f0ff;--muted:#8888aa;
+  --border:#2a2a3a;--green:#4ade80;--red:#f87171;--amber:#fbbf24;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.logo{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0}
+.search-bar{flex:1;max-width:340px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif}
+.search-bar::placeholder{color:var(--muted)}
+.search-bar:focus{border-color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.btn{background:linear-gradient(135deg,var(--accent),#9b6fff);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn:hover{opacity:.85}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-ghost:hover{background:var(--surface3)}
+.layout{display:flex;max-width:1100px;margin:0 auto;width:100%;gap:0;padding:20px 12px;min-height:calc(100vh - 56px)}
+.sidebar{width:220px;flex-shrink:0;margin-right:20px}
+.sidebar-sticky{position:sticky;top:76px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;color:var(--muted);margin-bottom:4px;transition:.15s}
+.nav-item:hover,.nav-item.active{background:var(--surface2);color:var(--text)}
+.nav-item.active .nav-icon{color:var(--accent)}
+.nav-icon{font-size:18px;width:22px;text-align:center}
+.feed{flex:1;min-width:0}
+.composer{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px}
+.composer-top{display:flex;gap:12px;align-items:flex-start}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;color:#fff}
+.composer-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;resize:none;min-height:56px}
+.composer-input::placeholder{color:var(--muted)}
+.composer-input:focus{border-color:var(--accent)}
+.composer-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap}
+.media-btn{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px}
+.media-btn:hover{border-color:var(--accent);color:var(--accent)}
+.post-btn{margin-left:auto;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:20px;padding:7px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.post-btn:hover{opacity:.85}
+.post-btn:disabled{opacity:.4;cursor:default}
+#file-input{display:none}
+.preview-media{max-width:100%;border-radius:10px;margin-top:10px;max-height:300px;object-fit:cover}
+.preview-wrap{position:relative;display:inline-block;margin-top:10px}
+.remove-media{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;border-radius:50%;width:24px;height:24px;color:#fff;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.post-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:14px;overflow:hidden;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.post-header{padding:14px 16px;display:flex;align-items:center;gap:10px}
+.post-user{font-weight:600;font-size:14px}
+.post-time{font-size:11px;color:var(--muted)}
+.post-body{padding:0 16px 12px;font-size:14px;line-height:1.6;word-break:break-word}
+.post-media{width:100%;max-height:480px;object-fit:cover;display:block}
+.post-video{width:100%;max-height:400px;display:block;background:#000}
+.post-actions{padding:10px 16px;display:flex;gap:4px;border-top:1px solid var(--border)}
+.action-btn{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;transition:.15s}
+.action-btn:hover{background:var(--surface2);color:var(--text)}
+.action-btn.liked{color:var(--red)}
+.action-btn.liked:hover{color:var(--red)}
+.comments-section{padding:0 16px 14px}
+.comment-input-wrap{display:flex;gap:8px;margin-bottom:10px}
+.comment-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:13px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif}
+.comment-input::placeholder{color:var(--muted)}
+.comment-input:focus{border-color:var(--accent)}
+.send-btn{background:var(--accent);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.comment{display:flex;gap:8px;margin-bottom:8px}
+.comment-bubble{background:var(--surface2);border-radius:12px;padding:7px 12px;flex:1;min-width:0}
+.comment-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.comment-text{font-size:13px;word-break:break-word;line-height:1.5}
+.comment-time{font-size:10px;color:var(--muted);margin-top:2px}
+.small-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;color:#fff}
+.loading-state{text-align:center;padding:32px;color:var(--muted);font-size:14px}
+.spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px}
+.tag{display:inline-block;background:rgba(124,111,255,.12);color:var(--accent);border-radius:20px;padding:2px 8px;font-size:11px;margin-right:4px}
+.right-panel{width:240px;flex-shrink:0;margin-left:20px}
+.widget-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}
+.widget-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
+.stat-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--muted)}
+.stat-num{font-weight:600;color:var(--text)}
+.name-input-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center}
+.name-modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:360px;width:90%;text-align:center}
+.name-modal-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.name-modal-sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+.name-modal-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px 16px;font-size:15px;color:var(--text);outline:none;font-family:'DM Sans',sans-serif;margin-bottom:12px}
+.name-modal-input:focus{border-color:var(--accent)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:10px 18px;font-size:13px;color:var(--text);z-index:300;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:860px){.right-panel{display:none}}
+@media(max-width:600px){.sidebar{display:none}.layout{padding:12px 8px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Nexus</div>
+  <input class="search-bar" type="text" placeholder="Search Nexus..." id="search-input">
+  <div class="topbar-right">
+    <div class="avatar" id="top-avatar" style="cursor:pointer" onclick="changeUser()">?</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-sticky">
+      <div class="nav-item active"><span class="nav-icon">🏠</span>Home</div>
+      <div class="nav-item"><span class="nav-icon">🔥</span>Trending</div>
+      <div class="nav-item"><span class="nav-icon">🖼️</span>Photos</div>
+      <div class="nav-item"><span class="nav-icon">🎬</span>Videos</div>
+      <div class="nav-item"><span class="nav-icon">🔔</span>Notifications</div>
+      <div style="margin-top:20px;padding:12px 14px;border-radius:12px;background:rgba(124,111,255,.08);border:1px solid rgba(124,111,255,.2)">
+        <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:4px">LIVE PLATFORM</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">Posts persist for all users on any device</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feed">
+    <div class="composer">
+      <div class="composer-top">
+        <div class="avatar" id="composer-avatar">?</div>
+        <textarea class="composer-input" id="post-input" placeholder="What's on your mind?" rows="2" oninput="updatePostBtn()"></textarea>
+      </div>
+      <div id="media-preview-wrap"></div>
+      <div class="composer-actions">
+        <button class="media-btn" onclick="document.getElementById('file-input').click()">📷 Photo/Video</button>
+        <button class="media-btn" onclick="insertEmoji()">😊 Emoji</button>
+        <input type="file" id="file-input" accept="image/*,video/*" onchange="handleFile(this)">
+        <button class="post-btn" id="post-btn" onclick="submitPost()" disabled>Post</button>
+      </div>
+    </div>
+    <div id="feed-container">
+      <div class="loading-state"><div class="spinner"></div><br>Loading posts...</div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="widget-card">
+      <div class="widget-title">Platform Stats</div>
+      <div class="stat-row"><span>Total Posts</span><span class="stat-num" id="stat-posts">—</span></div>
+      <div class="stat-row"><span>Total Comments</span><span class="stat-num" id="stat-comments">—</span></div>
+      <div class="stat-row"><span>Total Likes</span><span class="stat-num" id="stat-likes">—</span></div>
+    </div>
+    <div class="widget-card">
+      <div class="widget-title">Who's Posted</div>
+      <div id="users-list"><div style="color:var(--muted);font-size:13px">Loading...</div></div>
+    </div>
+    <div class="widget-card">
+      <div class="widget-title">About Nexus</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">Posts are shared across all devices in real-time. Nothing gets deleted. Anyone can post, like, and comment.</div>
+    </div>
+  </div>
+</div>
+
+<div class="name-input-modal" id="name-modal">
+  <div class="name-modal-box">
+    <div style="font-size:36px;margin-bottom:12px">👋</div>
+    <div class="name-modal-title">Welcome to Nexus</div>
+    <div class="name-modal-sub">Enter your name to start posting. Anyone can see your posts from any device.</div>
+    <input class="name-modal-input" id="name-input" placeholder="Your name..." maxlength="30" onkeydown="if(event.key==='Enter')joinNexus()">
+    <button class="post-btn" style="width:100%;padding:12px" onclick="joinNexus()">Join Nexus</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'nexus_posts_v3';
+let currentUser = null;
+let posts = [];
+let mediaData = null;
+let mediaType = null;
+let searchQuery = '';
+
+function getInitials(name){return name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}
+function getColor(name){const colors=['#7c6fff','#ff6b9d','#4ade80','#fbbf24','#60a5fa','#f472b6','#34d399','#a78bfa'];let h=0;for(let c of name)h=(h+c.charCodeAt(0))%colors.length;return colors[h]}
+function timeAgo(ts){const d=Date.now()-ts;if(d<60000)return 'just now';if(d<3600000)return Math.floor(d/60000)+'m ago';if(d<86400000)return Math.floor(d/3600000)+'h ago';return Math.floor(d/86400000)+'d ago'}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+async function loadPosts(){
+  try{
+    const r=await window.storage.get(STORAGE_KEY,true);
+    posts=r?JSON.parse(r.value):[];
+  }catch(e){posts=[];}
+  renderFeed();
+  updateStats();
+}
+
+async function savePosts(){
+  try{await window.storage.set(STORAGE_KEY,JSON.stringify(posts),true);}catch(e){console.error(e);}
+}
+
+function joinNexus(){
+  const n=document.getElementById('name-input').value.trim();
+  if(!n){toast('Please enter your name');return;}
+  currentUser=n;
+  document.getElementById('name-modal').style.display='none';
+  updateAvatars();
+  toast('Welcome, '+n+'! 🎉');
+}
+
+function changeUser(){
+  document.getElementById('name-modal').style.display='flex';
+  document.getElementById('name-input').value=currentUser||'';
+}
+
+function updateAvatars(){
+  if(!currentUser)return;
+  const ini=getInitials(currentUser);
+  const col=getColor(currentUser);
+  ['top-avatar','composer-avatar'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.textContent=ini;
+    el.style.background=col;
+  });
+}
+
+function handleFile(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    mediaData=e.target.result;
+    mediaType=file.type.startsWith('video')?'video':'image';
+    const wrap=document.getElementById('media-preview-wrap');
+    if(mediaType==='image'){
+      wrap.innerHTML=`<div class="preview-wrap"><img class="preview-media" src="${mediaData}"><button class="remove-media" onclick="clearMedia()">✕</button></div>`;
+    }else{
+      wrap.innerHTML=`<div class="preview-wrap"><video class="preview-media" controls><source src="${mediaData}"></video><button class="remove-media" onclick="clearMedia()">✕</button></div>`;
+    }
+    updatePostBtn();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearMedia(){
+  mediaData=null;mediaType=null;
+  document.getElementById('media-preview-wrap').innerHTML='';
+  document.getElementById('file-input').value='';
+  updatePostBtn();
+}
+
+function updatePostBtn(){
+  const txt=document.getElementById('post-input').value.trim();
+  document.getElementById('post-btn').disabled=!(txt||mediaData);
+}
+
+function insertEmoji(){
+  const emojis=['😊','😂','❤️','🔥','🎉','🙏','😍','👍','😎','🥳','💯','✨','🤩','😭','🫶'];
+  const e=emojis[Math.floor(Math.random()*emojis.length)];
+  const input=document.getElementById('post-input');
+  input.value+=e;
+  updatePostBtn();
+}
+
+async function submitPost(){
+  if(!currentUser){toast('Please enter your name first');document.getElementById('name-modal').style.display='flex';return;}
+  const txt=document.getElementById('post-input').value.trim();
+  if(!txt&&!mediaData)return;
+  const post={
+    id:Date.now()+Math.random().toString(36).substr(2),
+    user:currentUser,
+    text:txt,
+    media:mediaData,
+    mediaType:mediaType,
+    timestamp:Date.now(),
+    likes:[],
+    comments:[]
+  };
+  posts.unshift(post);
+  await savePosts();
+  document.getElementById('post-input').value='';
+  clearMedia();
+  updatePostBtn();
+  renderFeed();
+  updateStats();
+  toast('Post shared! 🚀');
+}
+
+async function toggleLike(postId){
+  if(!currentUser){toast('Enter your name to like');return;}
+  const p=posts.find(x=>x.id===postId);
+  if(!p)return;
+  const idx=p.likes.indexOf(currentUser);
+  if(idx===-1)p.likes.push(currentUser);else p.likes.splice(idx,1);
+  await savePosts();
+  renderFeed();
+  updateStats();
+}
+
+function toggleComments(postId){
+  const el=document.getElementById('comments-'+postId);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+
+async function submitComment(postId){
+  if(!currentUser){toast('Enter your name to comment');return;}
+  const input=document.getElementById('ci-'+postId);
+  const txt=input.value.trim();if(!txt)return;
+  const p=posts.find(x=>x.id===postId);if(!p)return;
+  p.comments.push({user:currentUser,text:txt,timestamp:Date.now()});
+  input.value='';
+  await savePosts();
+  renderFeed();
+  updateStats();
+  setTimeout(()=>{const el=document.getElementById('comments-'+postId);if(el)el.style.display='block';},50);
+}
+
+function renderFeed(){
+  const container=document.getElementById('feed-container');
+  const q=document.getElementById('search-input').value.toLowerCase();
+  let filtered=posts.filter(p=>!q||(p.text&&p.text.toLowerCase().includes(q))||(p.user&&p.user.toLowerCase().includes(q)));
+  if(!filtered.length){
+    container.innerHTML=`<div class="empty-state"><div class="empty-icon">🌌</div><div class="empty-title">${q?'No results found':'Be the first to post!'}</div><div style="font-size:13px;color:var(--muted)">${q?'Try a different search':'Share something with the world</div>'}</div>`;
+    return;
+  }
+  container.innerHTML=filtered.map(post=>{
+    const liked=currentUser&&post.likes.includes(currentUser);
+    const col=getColor(post.user);
+    const ini=getInitials(post.user);
+    const commentsHtml=post.comments.map(c=>{
+      const cc=getColor(c.user);
+      return `<div class="comment"><div class="small-avatar" style="background:${cc}">${getInitials(c.user)}</div><div class="comment-bubble"><div class="comment-name">${esc(c.user)}</div><div class="comment-text">${esc(c.text)}</div><div class="comment-time">${timeAgo(c.timestamp)}</div></div></div>`;
+    }).join('');
+    return `<div class="post-card">
+      <div class="post-header">
+        <div class="avatar" style="background:${col};width:38px;height:38px;font-size:13px">${ini}</div>
+        <div style="flex:1;min-width:0">
+          <div class="post-user">${esc(post.user)}</div>
+          <div class="post-time">${timeAgo(post.timestamp)}</div>
+        </div>
+      </div>
+      ${post.text?`<div class="post-body">${esc(post.text)}</div>`:''}
+      ${post.media&&post.mediaType==='image'?`<img class="post-media" src="${post.media}" loading="lazy">`:''}
+      ${post.media&&post.mediaType==='video'?`<video class="post-video" controls><source src="${post.media}"></video>`:''}
+      <div class="post-actions">
+        <button class="action-btn ${liked?'liked':''}" onclick="toggleLike('${post.id}')">
+          ${liked?'❤️':'🤍'} ${post.likes.length}
+        </button>
+        <button class="action-btn" onclick="toggleComments('${post.id}')">
+          💬 ${post.comments.length}
+        </button>
+        <button class="action-btn" onclick="sharePost('${post.id}')">🔗 Share</button>
+      </div>
+      <div class="comments-section" id="comments-${post.id}" style="display:${post.comments.length?'block':'none'}">
+        ${commentsHtml}
+        <div class="comment-input-wrap">
+          <div class="small-avatar" style="background:${currentUser?getColor(currentUser):'#444'}">${currentUser?getInitials(currentUser):'?'}</div>
+          <input class="comment-input" id="ci-${post.id}" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')submitComment('${post.id}')">
+          <button class="send-btn" onclick="submitComment('${post.id}')">➤</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateRightPanel();
+}
+
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function sharePost(postId){
+  navigator.clipboard&&navigator.clipboard.writeText(window.location.href+'#'+postId).then(()=>toast('Link copied!')).catch(()=>toast('Post #'+postId+' shared!'));
+  toast('Link copied to clipboard! 📋');
+}
+
+function updateStats(){
+  document.getElementById('stat-posts').textContent=posts.length;
+  document.getElementById('stat-comments').textContent=posts.reduce((a,p)=>a+p.comments.length,0);
+  document.getElementById('stat-likes').textContent=posts.reduce((a,p)=>a+p.likes.length,0);
+}
+
+function updateRightPanel(){
+  const users=[...new Set(posts.map(p=>p.user))].slice(0,6);
+  const ul=document.getElementById('users-list');
+  if(!ul)return;
+  if(!users.length){ul.innerHTML='<div style="color:var(--muted);font-size:13px">No users yet</div>';return;}
+  ul.innerHTML=users.map(u=>{
+    const count=posts.filter(p=>p.user===u).length;
+    const col=getColor(u);
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div class="avatar" style="background:${col};width:30px;height:30px;font-size:11px;flex-shrink:0">${getInitials(u)}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u)}</div><div style="font-size:11px;color:var(--muted)">${count} post${count!==1?'s':''}</div></div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('search-input').addEventListener('input',()=>renderFeed());
+
+setInterval(async()=>{
+  const prev=posts.length;
+  await loadPosts();
+  if(posts.length>prev)toast('New posts available! ✨');
+},15000);
+
+loadPosts();
+</script>
+</body>
+</html>
